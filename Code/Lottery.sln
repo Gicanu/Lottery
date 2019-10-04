@@ -5,6 +5,15 @@ VisualStudioVersion = 16.0.29306.81
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lottery.ConsoleApp", "Lottery.ConsoleApp\Lottery.ConsoleApp.csproj", "{AFCF9F9B-F586-4279-A5F0-A1493ECA7A72}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lottery.Engine", "Lottery.Engine\Lottery.Engine.csproj", "{5EB9C834-ED08-4D43-939C-3D8780236BD9}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Data", "Data", "{2F097FEE-5540-4347-A1CB-B6C5F8847DD5}"
+	ProjectSection(SolutionItems) = preProject
+		..\Data\5din40.csv = ..\Data\5din40.csv
+		..\Data\6din49.csv = ..\Data\6din49.csv
+		..\Data\joker.csv = ..\Data\joker.csv
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +24,10 @@ Global
 		{AFCF9F9B-F586-4279-A5F0-A1493ECA7A72}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AFCF9F9B-F586-4279-A5F0-A1493ECA7A72}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AFCF9F9B-F586-4279-A5F0-A1493ECA7A72}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5EB9C834-ED08-4D43-939C-3D8780236BD9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5EB9C834-ED08-4D43-939C-3D8780236BD9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5EB9C834-ED08-4D43-939C-3D8780236BD9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5EB9C834-ED08-4D43-939C-3D8780236BD9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
