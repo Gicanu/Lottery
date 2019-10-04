@@ -1,11 +1,12 @@
 ﻿using System;
 
-namespace Lottery.Console
+namespace Lottery.ConsoleApp
 {
     class Program
     {
         static void Main(string[] args)
         {
+            Console.WriteLine("Test");
         }
     }
 }
