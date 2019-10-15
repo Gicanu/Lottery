@@ -5,9 +5,18 @@ namespace Lottery.Engine
 {
     public class Number : IEquatable<Number>
     {
-        public int Value { get; set; }
+        public Number(int value, string category = null)
+        {
+            if (value <= 0)
+                throw new ArgumentException("Number value must be greater than zero.");
 
-        public string Category { get; set; }
+            Value = value;
+            Category = category ?? string.Empty;
+        }
+
+        public int Value { get; }
+
+        public string Category { get; }
 
         public override string ToString()
         {

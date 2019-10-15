@@ -27,7 +27,7 @@ namespace Lottery.ConsoleApp
                 while (row != null)
                 {
                     string[] values = row.Split(',');
-                    Number[] numbers = values.Skip(1).Select(value => int.Parse(value)).Select((value, index) => new Number { Value = value, Category = index == values.Length - 1 ? "Joker" : "" }).ToArray();
+                    Number[] numbers = values.Skip(1).Select(value => int.Parse(value)).Select((value, index) => new Number(value, index == values.Length - 1 ? "Joker" : "")).ToArray();
 
                     inputData.Add(numbers);
 
