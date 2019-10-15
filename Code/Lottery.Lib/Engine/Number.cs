@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 
 namespace Lottery.Lib.Engine
 {
@@ -20,7 +21,7 @@ namespace Lottery.Lib.Engine
 
         public override string ToString()
         {
-            return string.Concat(Value, Category[0]);
+            return string.Concat(Value, Category.FirstOrDefault());
         }
 
         public override bool Equals(object obj)

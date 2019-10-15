@@ -1,4 +1,5 @@
 ﻿using Lottery.Lib.Engine;
+using Lottery.Lib.Storage;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -17,23 +18,28 @@ namespace Lottery.ConsoleApp
 
             List<Number[]> inputData = new List<Number[]>();
             
-            using (var reader = new StreamReader(File.OpenRead(filePath)))
+            using (var reader = new CsvFileReader(new StreamReader(File.OpenRead(filePath))))
             {
-                string row = reader.ReadLine();
+                string[] values = reader.ReadLine();
 
-                if (row != null)
-                    row = reader.ReadLine();
+                if (values != null)
+                    values = reader.ReadLine();
 
-                while (row != null)
+                while (values != null)
                 {
-                    string[] values = row.Split(',');
-                    Number[] numbers = values.Skip(1).Select(value => int.Parse(value)).Select((value, index) => new Number(value, index == values.Length - 1 ? "Joker" : "")).ToArray();
+                    List<Number> numberSeries = new List<Number>();
 
-                    inputData.Add(numbers);
+                    numberSeries.Add(values.Skip(1).Select(value => int.Parse(value)).First().ToJoker());
+                    numberSeries.AddRange(values.Skip(2).Select(value => int.Parse(value)).Select(value => value.ToNumber()));
 
-                    row = reader.ReadLine();
+                    inputData.Add(numberSeries.ToArray());
+
+                    values = reader.ReadLine();
                 }
             }
+
+            foreach (Number[] numberSeries in inputData.Skip(inputData.Count - 6))
+                Console.WriteLine(string.Join(", ", numberSeries.Select(number => number.ToString().PadLeft(3))));
 
             var scores = engine.Process(inputData);
 
