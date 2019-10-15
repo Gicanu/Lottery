@@ -1,4 +1,4 @@
-﻿namespace Lottery.Lib
+﻿namespace Lottery.Lib.Engine
 {
     public static class NumberExtensions
     {
