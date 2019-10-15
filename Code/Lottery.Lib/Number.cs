@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Lottery.Engine
+namespace Lottery.Lib
 {
     public class Number : IEquatable<Number>
     {

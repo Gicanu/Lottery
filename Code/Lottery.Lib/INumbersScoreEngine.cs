@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Lottery.Engine
+namespace Lottery.Lib
 {
     public interface INumbersScoreEngine
     {

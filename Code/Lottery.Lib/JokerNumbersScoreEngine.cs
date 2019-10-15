@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace Lottery.Engine
+namespace Lottery.Lib
 {
     public class JokerNumbersScoreEngine : INumbersScoreEngine
     {
