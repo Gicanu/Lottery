@@ -1,10 +1,7 @@
-﻿using Lottery.Lib.Engine;
-using Lottery.Lib.Storage;
+﻿using Lottery.Storage.Contract;
 using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Reflection;
+using Unity;
 
 namespace Lottery.ConsoleApp
 {
@@ -12,41 +9,94 @@ namespace Lottery.ConsoleApp
     {
         static void Main(string[] args)
         {
-            INumbersScoreEngine engine = new JokerNumbersScoreEngine();
+            ProgramArguments arguments = ParseArguments(args);
 
-            string filePath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "..", "..", "..", "..", "..", "Data", "joker.csv");
-
-            List<Number[]> inputData = new List<Number[]>();
-            
-            using (var reader = new CsvFileReader(new StreamReader(File.OpenRead(filePath))))
+            if (arguments == null)
             {
-                string[] values = reader.ReadLine();
-
-                if (values != null)
-                    values = reader.ReadLine();
-
-                while (values != null)
-                {
-                    List<Number> numberSeries = new List<Number>();
-
-                    numberSeries.Add(values.Skip(1).Select(value => int.Parse(value)).First().ToJoker());
-                    numberSeries.AddRange(values.Skip(2).Select(value => int.Parse(value)).Select(value => value.ToNumber()));
-
-                    inputData.Add(numberSeries.ToArray());
-
-                    values = reader.ReadLine();
-                }
+                PrintUsageMessage();
+                return;
             }
 
-            foreach (Number[] numberSeries in inputData.Skip(inputData.Count - 6))
-                Console.WriteLine(string.Join(", ", numberSeries.Select(number => number.ToString().PadLeft(3))));
+            HistoricalDataType historicalDataType = GetHistoricalDataType(arguments);
 
-            var scores = engine.Process(inputData);
+            if (historicalDataType == HistoricalDataType.None)
+            {
+                PrintUsageMessage();
+                return;
+            }
 
-            foreach (var score in scores)
-                Console.WriteLine(score.Item1);
+            IUnityContainer unityContainer = new UnityContainer().RegisterAllLibTypes();
 
-            Console.WriteLine();
+            IHistoricalDataReader reader = unityContainer.Resolve<IHistoricalDataReader>(historicalDataType.ToString());
+            HistoricalData historicalData = reader.ReadAll(arguments.InputFilePath);
+
+            Console.WriteLine(historicalData);
+        }
+
+        private static HistoricalDataType GetHistoricalDataType(ProgramArguments arguments)
+        {
+            switch (arguments.InputType)
+            {
+                case "Joker":
+                    return HistoricalDataType.Joker;
+
+                default:
+                    return HistoricalDataType.None;
+            }
+        }
+
+        private static ProgramArguments ParseArguments(string[] args)
+        {
+            if (args.Length != 3)
+                return null;
+
+            string inputTypeArgument = args.FirstOrDefault(argument => argument.StartsWith("-InputType", StringComparison.InvariantCultureIgnoreCase));
+            string inputTypeArgumentValue = null;
+            string inputFilePathArgumentValue = null;
+
+            bool inputTypeArgumentValueExpected = false;
+
+            foreach (string arg in args)
+            {
+                if (arg.StartsWith("-"))
+                {
+                    if (arg.Equals("-InputType", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        inputTypeArgumentValueExpected = true;
+                        continue;
+                    }
+                }
+                else
+                {
+                    if (inputTypeArgumentValueExpected)
+                    {
+                        if (string.IsNullOrEmpty(inputTypeArgumentValue))
+                        {
+                            inputTypeArgumentValue = arg;
+                            inputTypeArgumentValueExpected = false;
+                            continue;
+                        }
+                    }
+                    else if (string.IsNullOrEmpty(inputFilePathArgumentValue))
+                    {
+                        inputFilePathArgumentValue = arg;
+                        continue;
+                    }
+                }
+
+                return null;
+            }
+
+            return new ProgramArguments
+            {
+                InputType = inputTypeArgumentValue,
+                InputFilePath = inputFilePathArgumentValue,
+            };
+        }
+
+        private static void PrintUsageMessage()
+        {
+            Console.WriteLine("Usage: Lottery -InputType 6of49|Joker|5of40 InputFilePath ");
         }
     }
 }

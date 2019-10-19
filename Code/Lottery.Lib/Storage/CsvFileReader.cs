@@ -1,54 +1,31 @@
-﻿using System;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace Lottery.Lib.Storage
+namespace Lottery.Storage
 {
-    public class CsvFileReader : IDisposable
+    interface ICsvFileReader
     {
-        private readonly char separator;
-        private StreamReader reader;
+        IEnumerable<string[]> ReadContent(string filePath);
+    }
 
-        public CsvFileReader(StreamReader reader, char separator = ',')
+    class CsvFileReader : ICsvFileReader
+    {
+        public IEnumerable<string[]> ReadContent(string filePath)
         {
-            this.reader = reader;
-            this.separator = separator;
-        }
-
-        public string[] ReadLine()
-        {
-            string line = reader.ReadLine();
-
-            return line?.Split(separator).Select(value => value.Trim()).ToArray();
-        }
-
-        ~CsvFileReader()
-        {
-            Dispose(false);
-        }
-
-        public void Close()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected void Dispose(bool disposing)
-        {
-            try
+            using (StreamReader reader = new StreamReader(File.OpenRead(filePath)))
             {
-                if (disposing)
-                    reader?.Close();
-            }
-            finally
-            {
-                reader = null;
+                string line = reader.ReadLine();
+
+                if (line != null)
+                    line = reader.ReadLine();
+
+                while (line != null)
+                {
+                    yield return line.Split(',').Select(value => value.Trim()).ToArray();
+
+                    line = reader.ReadLine();
+                }
             }
         }
     }
