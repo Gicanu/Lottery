@@ -1,4 +1,5 @@
-﻿using Lottery.Storage.Contract;
+﻿using Lottery.Engine.Contract;
+using Lottery.Storage.Contract;
 using System;
 using System.Linq;
 using Unity;
@@ -25,12 +26,18 @@ namespace Lottery.ConsoleApp
                 return;
             }
 
-            IUnityContainer unityContainer = new UnityContainer().RegisterAllLibTypes();
+            IUnityContainer unityContainer = new UnityContainer()
+                .RegisterAllStorageTypes()
+                .RegisterAllEngineTypes();
 
             IHistoricalDataReader reader = unityContainer.Resolve<IHistoricalDataReader>(historicalDataType.ToString());
             HistoricalData historicalData = reader.ReadAll(arguments.InputFilePath);
+            
+            INumbersProcessor numbersProcessor = unityContainer.Resolve<INumbersProcessor>();
+            ProcessingResult result = numbersProcessor.Process(historicalData);
 
             Console.WriteLine(historicalData);
+            Console.WriteLine(result);
         }
 
         private static HistoricalDataType GetHistoricalDataType(ProgramArguments arguments)
