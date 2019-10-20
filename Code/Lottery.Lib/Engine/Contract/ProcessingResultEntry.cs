@@ -22,7 +22,7 @@
 
         public override string ToString()
         {
-            return $"{Number}{(Type == NumberType.Joker ? "J" : string.Empty)} ({Score})";
+            return $"{Number}{(Type == NumberType.Joker ? "J" : string.Empty)}";
         }
     }
 

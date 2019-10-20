@@ -38,16 +38,10 @@ namespace Lottery.ConsoleApp
             ProcessingResult result = dataProcessor.Process(historicalData);
 
             IResultFormatter resultFormatter = unityContainer.Resolve<IResultFormatter>("Tabular");
-            string[] rows = resultFormatter.Format(result);
+            IEnumerable<string[]> rows = resultFormatter.Format(result);
 
-            foreach (string row in rows)
-                Console.WriteLine(row);
-
-            using (StreamWriter writer = new StreamWriter(File.OpenWrite("output.txt")))
-            {
-                foreach (string row in rows)
-                    writer.WriteLine(row);
-            }
+            PrintRows(rows);
+            SaveRowsToCsv(rows, "output.txt");
 
             Console.WriteLine("Result file written.");
         }
@@ -116,6 +110,23 @@ namespace Lottery.ConsoleApp
         private static void PrintUsageMessage()
         {
             Console.WriteLine("Usage: Lottery -InputType 6of49|Joker|5of40 InputFilePath ");
+        }
+
+        private static void PrintRows(IEnumerable<string[]> rowItems)
+        {
+            int maxItemLength = rowItems.SelectMany(item => item).Select(item => item.Length).Max();
+
+            foreach (string[] items in rowItems)
+                Console.WriteLine(items.Aggregate(string.Empty, (result, item) => string.Concat(result, item, new string(' ', maxItemLength + 1 - item.Length))));
+        }
+
+        private static void SaveRowsToCsv(IEnumerable<string[]> rowItems, string outputFilePath)
+        {
+            using (StreamWriter writer = new StreamWriter(File.OpenWrite("output.txt")))
+            {
+                foreach (string[] items in rowItems)
+                    writer.WriteLine(items.Aggregate(string.Empty, (result, item) => string.Concat(result, item, ",")));
+            }
         }
     }
 }

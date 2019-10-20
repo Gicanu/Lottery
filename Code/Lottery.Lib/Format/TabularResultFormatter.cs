@@ -9,12 +9,12 @@ namespace Lottery.Format
 {
     class TabularResultFormatter : IResultFormatter
     {
-        public string[] Format(ProcessingResult processingResult)
+        public IEnumerable<string[]> Format(ProcessingResult processingResult)
         {
             switch (processingResult.DataType)
             {
                 case HistoricalDataType.Joker:
-                    return GenerateRows(GenerateJokerHeader(processingResult.ResultGroups).Concat(GenerateJokerContent(processingResult.ResultGroups)));
+                    return GenerateJokerHeader(processingResult.ResultGroups).Concat(GenerateJokerContent(processingResult.ResultGroups));
 
                 default:
                     throw new NotImplementedException();
@@ -60,15 +60,6 @@ namespace Lottery.Format
 
                 yield return rowItems.ToArray();
             }
-        }
-
-        private string[] GenerateRows(IEnumerable<string[]> rowItems)
-        {
-            int maxItemLength = rowItems.SelectMany(item => item).Select(item => item.Length).Max();
-
-            return rowItems
-                .Select(items => items.Aggregate(string.Empty, (result, item) => string.Concat(result, item, new string(' ', maxItemLength + 1 - item.Length))))
-                .ToArray();
         }
     }
 

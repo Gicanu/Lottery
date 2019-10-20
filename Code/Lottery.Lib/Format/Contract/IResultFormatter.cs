@@ -1,9 +1,10 @@
 ﻿using Lottery.Engine.Contract;
+using System.Collections.Generic;
 
 namespace Lottery.Format.Contract
 {
     public interface IResultFormatter
     {
-        string[] Format(ProcessingResult processingResult);
+        IEnumerable<string[]> Format(ProcessingResult processingResult);
     }
 }
