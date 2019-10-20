@@ -1,6 +1,7 @@
 ﻿using Lottery.Engine.Contract;
 using Lottery.Storage.Contract;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Unity;
 
@@ -33,11 +34,10 @@ namespace Lottery.ConsoleApp
             IHistoricalDataReader reader = unityContainer.Resolve<IHistoricalDataReader>(historicalDataType.ToString());
             HistoricalData historicalData = reader.ReadAll(arguments.InputFilePath);
             
-            INumbersProcessor numbersProcessor = unityContainer.Resolve<INumbersProcessor>();
-            ProcessingResult result = numbersProcessor.Process(historicalData);
+            IDataProcessor dataProcessor = unityContainer.Resolve<IDataProcessor>(HistoricalDataType.Joker.ToString());
+            ProcessingResult result = dataProcessor.Process(historicalData);
 
-            Console.WriteLine(historicalData);
-            Console.WriteLine(result);
+            PrintResult(result);
         }
 
         private static HistoricalDataType GetHistoricalDataType(ProgramArguments arguments)
@@ -104,6 +104,37 @@ namespace Lottery.ConsoleApp
         private static void PrintUsageMessage()
         {
             Console.WriteLine("Usage: Lottery -InputType 6of49|Joker|5of40 InputFilePath ");
+        }
+
+        private static void PrintResult(ProcessingResult processingResult)
+        {
+            foreach (ProcessingResultGroup group in processingResult.ResultGroups)
+            {
+                ProcessingResultEntry[] jokerEntries = group.Entries.Where(entry => entry.Type == NumberType.Joker).OrderByDescending(entry => entry.Score).ToArray();
+                ProcessingResultEntry[] numberEntries = group.Entries.Where(entry => entry.Type == NumberType.Regular).OrderByDescending(entry => entry.Score).ToArray();
+
+                List<(string, string)> rows = new List<(string, string)>();
+
+                Console.WriteLine(group.Key);
+                Console.WriteLine();
+
+                for (int i = 0; i < Math.Max(jokerEntries.Length, numberEntries.Length); i++)
+                {
+                    string value1 = string.Empty;
+
+                    if (i < jokerEntries.Length)
+                        value1 = $"{jokerEntries[i].ToString()} ";
+
+                    string value2 = string.Empty;
+
+                    if (i < numberEntries.Length)
+                        value2 = numberEntries[i].ToString();
+
+                    string separator = new string(' ', 10 - value1.Length);
+
+                    Console.WriteLine(string.Concat(value1, separator, value2));
+                }
+            }
         }
     }
 }

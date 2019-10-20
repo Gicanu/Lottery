@@ -12,21 +12,28 @@ namespace Lottery
         {
             IUnityContainer storageContainer = container
                 .CreateChildContainer()
-                .RegisterType<ICsvFileReader, CsvFileReader>()
-                .RegisterType<IHistoricalDataReader, JokerHistoricalDataReader>(HistoricalDataType.Joker.ToString());
+                .RegisterType<ICsvFileReader, CsvFileReader>();
+
+            IUnityContainer jokerStorageContainer = storageContainer
+                .CreateChildContainer()
+                .RegisterType<IHistoricalDataReader, JokerHistoricalDataReader>();
 
             return container
-                .RegisterFactory<IHistoricalDataReader>(HistoricalDataType.Joker.ToString(), _ => storageContainer.Resolve<IHistoricalDataReader>(HistoricalDataType.Joker.ToString()));
+                .RegisterFactory<IHistoricalDataReader>(HistoricalDataType.Joker.ToString(), _ => jokerStorageContainer.Resolve<IHistoricalDataReader>());
         }
 
         public static IUnityContainer RegisterAllEngineTypes(this IUnityContainer container)
         {
             IUnityContainer engineContainer = container
                 .CreateChildContainer()
-                .RegisterType<INumbersProcessor, NumbersProcessor>();
+                .RegisterType<IDataProcessor, DataProcessor>();
+
+            IUnityContainer jokerEngineContainer = engineContainer
+                .CreateChildContainer()
+                .RegisterType<IScoreProcessor, FrequencyScoreJokerProcessor>("Frequency_Joker");
 
             return container
-                .RegisterFactory<INumbersProcessor>(_ => engineContainer.Resolve<INumbersProcessor>());
+                .RegisterFactory<IDataProcessor>(HistoricalDataType.Joker.ToString(), _ => jokerEngineContainer.Resolve<IDataProcessor>());
         }
     }
 }

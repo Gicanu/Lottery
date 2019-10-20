@@ -2,7 +2,7 @@
 
 namespace Lottery.Engine.Contract
 {
-    public interface INumbersProcessor
+    public interface IDataProcessor
     {
         ProcessingResult Process(HistoricalData historicalData);
     }
