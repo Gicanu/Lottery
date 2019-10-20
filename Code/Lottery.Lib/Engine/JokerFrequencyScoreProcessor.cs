@@ -9,29 +9,36 @@ namespace Lottery.Engine
     {
         public ProcessingResultGroup Process(HistoricalDataEntry[] dataEntries)
         {
-            Dictionary<int, int> jokerFrequencies = CalculateFrequencies(dataEntries, 0, 1, 20);
-            Dictionary<int, int> numberFrequencies = CalculateFrequencies(dataEntries, 1, 5, 40);
+            Dictionary<int, int> jokerFrequencies = CalculateFrequencies(dataEntries, 5, 1, 20);
+            Dictionary<int, int> numberFrequencies = CalculateFrequencies(dataEntries, 0, 5, 45);
 
-            List<ProcessingResultEntry> jokerResultEntries = Enumerable.Range(1, 20).Select(number => new ProcessingResultEntry(number, NumberType.Joker, jokerFrequencies[number])).ToList();
-            List<ProcessingResultEntry> numberResultEntries = Enumerable.Range(1, 40).Select(number => new ProcessingResultEntry(number, numberFrequencies[number])).ToList();
+            List<ProcessingResultEntry> jokerResultEntries = ConvertToResult(jokerFrequencies, isJoker: true);
+            List<ProcessingResultEntry> numberResultEntries = ConvertToResult(numberFrequencies, isJoker: false);
 
             return new ProcessingResultGroup("Frequency", jokerResultEntries.Concat(numberResultEntries).ToArray());
         }
 
         private Dictionary<int, int> CalculateFrequencies(HistoricalDataEntry[] dataEntries, int from, int count, int endRange)
         {
-            Dictionary<int, int> frequencies = dataEntries
-                .SelectMany(dataEntry => dataEntry.Numbers.Skip(from).Take(count))
-                .ToLookup(number => number)
-                .ToDictionary(group => group.Key, group => group.Count());
+            Dictionary<int, int> frequencies = Enumerable.Range(1, endRange).ToDictionary(number => number, _ => 0);
 
-            for (int number = 1; number <= endRange; number++)
+            foreach (HistoricalDataEntry dataEntry in dataEntries)
             {
-                if (!frequencies.ContainsKey(number))
-                    frequencies.Add(number, 0);
+                foreach (int number in dataEntry.Numbers.Skip(from).Take(count))
+                    frequencies[number]++;
             }
 
             return frequencies;
+        }
+
+        private List<ProcessingResultEntry> ConvertToResult(Dictionary<int, int> frequencies, bool isJoker)
+        {
+            int minIndex = frequencies.Values.Min();
+
+            return frequencies
+                .OrderBy(pair => pair.Key)
+                .Select(pair => new ProcessingResultEntry(pair.Key, isJoker ? NumberType.Joker : NumberType.Regular, pair.Value - minIndex))
+                .ToList();
         }
     }
 }

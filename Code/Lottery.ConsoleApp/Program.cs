@@ -3,6 +3,7 @@ using Lottery.Format.Contract;
 using Lottery.Storage.Contract;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Unity;
 
@@ -41,6 +42,14 @@ namespace Lottery.ConsoleApp
 
             foreach (string row in rows)
                 Console.WriteLine(row);
+
+            using (StreamWriter writer = new StreamWriter(File.OpenWrite("output.txt")))
+            {
+                foreach (string row in rows)
+                    writer.WriteLine(row);
+            }
+
+            Console.WriteLine("Result file written.");
         }
 
         private static HistoricalDataType GetHistoricalDataType(ProgramArguments arguments)

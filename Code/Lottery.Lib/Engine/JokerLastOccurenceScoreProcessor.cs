@@ -9,8 +9,8 @@ namespace Lottery.Engine
     {
         public ProcessingResultGroup Process(HistoricalDataEntry[] dataEntries)
         {
-            Dictionary<int, int> jokerLastOccurenceIndexes = CalculateLastOccurenceIndexes(dataEntries, 0, 1, 20);
-            Dictionary<int, int> numberLastOccurenceIndexes = CalculateLastOccurenceIndexes(dataEntries, 1, 5, 40);
+            Dictionary<int, int> jokerLastOccurenceIndexes = CalculateLastOccurenceIndexes(dataEntries, 5, 1, 20);
+            Dictionary<int, int> numberLastOccurenceIndexes = CalculateLastOccurenceIndexes(dataEntries, 0, 5, 40);
 
             List<ProcessingResultEntry> jokerResultEntries = ConvertToResult(jokerLastOccurenceIndexes, isJoker: true);
             List<ProcessingResultEntry> numberResultEntries = ConvertToResult(numberLastOccurenceIndexes, isJoker: false);
@@ -25,9 +25,7 @@ namespace Lottery.Engine
             for (int index = 0; index < dataEntries.Length; index++)
             {
                 foreach (int number in dataEntries[index].Numbers.Skip(from).Take(count))
-                {
                     lastOccurenceIndexes[number] = index;
-                }
             }
 
             return lastOccurenceIndexes;
