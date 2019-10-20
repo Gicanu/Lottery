@@ -41,13 +41,13 @@ namespace Lottery.Format
                 itemsList.Add(groups[index].Entries
                     .Where(entry => entry.Type == NumberType.Joker)
                     .OrderByDescending(entry => entry.Score)
-                    .Select(entry => entry.ToString())
+                    .Select((entry, index) => $"{index + 1}. {entry}")
                     .ToArray());
 
                 itemsList.Add(groups[index].Entries
                     .Where(entry => entry.Type == NumberType.Regular)
                     .OrderByDescending(entry => entry.Score)
-                    .Select(entry => entry.ToString())
+                    .Select((entry, index) => $"{index + 1}. {entry}")
                     .ToArray());
             }
 
