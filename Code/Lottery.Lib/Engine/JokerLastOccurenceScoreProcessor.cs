@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Lottery.Engine
 {
-    class FrequencyScoreJokerProcessor : IScoreProcessor
+    class JokerFrequencyScoreProcessor : IScoreProcessor
     {
         public ProcessingResultGroup Process(HistoricalDataEntry[] dataEntries)
         {

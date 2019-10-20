@@ -5,6 +5,6 @@ namespace Lottery.Engine
 {
     public interface IScoreProcessor
     {
-        ProcessingResultGroup Process(HistoricalDataEntry[] historicalDataEntries);
+        ProcessingResultGroup Process(HistoricalDataEntry[] dataEntries);
     }
 }

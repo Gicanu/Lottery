@@ -30,7 +30,8 @@ namespace Lottery
 
             IUnityContainer jokerEngineContainer = engineContainer
                 .CreateChildContainer()
-                .RegisterType<IScoreProcessor, FrequencyScoreJokerProcessor>("Frequency_Joker");
+                .RegisterType<IScoreProcessor, JokerFrequencyScoreProcessor>("Joker|Frequency")
+                .RegisterType<IScoreProcessor, JokerLastOccurenceScoreProcessor>("Joker|LastOccurence");
 
             return container
                 .RegisterFactory<IDataProcessor>(HistoricalDataType.Joker.ToString(), _ => jokerEngineContainer.Resolve<IDataProcessor>());

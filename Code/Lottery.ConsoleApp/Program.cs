@@ -130,9 +130,10 @@ namespace Lottery.ConsoleApp
                     if (i < numberEntries.Length)
                         value2 = numberEntries[i].ToString();
 
-                    string separator = new string(' ', 10 - value1.Length);
+                    string separator = new string(' ', 12 - value1.Length);
 
                     Console.WriteLine(string.Concat(value1, separator, value2));
+                    Console.WriteLine();
                 }
             }
         }
