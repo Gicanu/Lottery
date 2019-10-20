@@ -1,5 +1,7 @@
 ﻿using Lottery.Engine;
 using Lottery.Engine.Contract;
+using Lottery.Format;
+using Lottery.Format.Contract;
 using Lottery.Storage;
 using Lottery.Storage.Contract;
 using Unity;
@@ -8,7 +10,16 @@ namespace Lottery
 {
     public static class ContainerExtensions
     {
-        public static IUnityContainer RegisterAllStorageTypes(this IUnityContainer container)
+        public static IUnityContainer RegisterAllTypes(this IUnityContainer container)
+        {
+            RegisterAllStorageTypes(container);
+            RegisterAllEngineTypes(container);
+            RegisterAllFormatTypes(container);
+
+            return container;
+        }
+
+        private static void RegisterAllStorageTypes(IUnityContainer container)
         {
             IUnityContainer storageContainer = container
                 .CreateChildContainer()
@@ -18,11 +29,11 @@ namespace Lottery
                 .CreateChildContainer()
                 .RegisterType<IHistoricalDataReader, JokerHistoricalDataReader>();
 
-            return container
+            container
                 .RegisterFactory<IHistoricalDataReader>(HistoricalDataType.Joker.ToString(), _ => jokerStorageContainer.Resolve<IHistoricalDataReader>());
         }
 
-        public static IUnityContainer RegisterAllEngineTypes(this IUnityContainer container)
+        public static void RegisterAllEngineTypes(IUnityContainer container)
         {
             IUnityContainer engineContainer = container
                 .CreateChildContainer()
@@ -33,8 +44,14 @@ namespace Lottery
                 .RegisterType<IScoreProcessor, JokerFrequencyScoreProcessor>("Joker|Frequency")
                 .RegisterType<IScoreProcessor, JokerLastOccurenceScoreProcessor>("Joker|LastOccurence");
 
-            return container
+            container
                 .RegisterFactory<IDataProcessor>(HistoricalDataType.Joker.ToString(), _ => jokerEngineContainer.Resolve<IDataProcessor>());
+        }
+
+        public static void RegisterAllFormatTypes(IUnityContainer container)
+        {
+            container
+                .RegisterType<IResultFormatter, TabularResultFormatter>("Tabular");
         }
     }
 }
