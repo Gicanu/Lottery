@@ -20,13 +20,13 @@ namespace Lottery.Storage
 
             foreach (string[] rawValues in csvFileReader.ReadContent(sourceFilePath))
             {
-                DateTime timestamp = DateTime.Parse(rawValues.First());
+                DateTime timestamp = DateTime.ParseExact(rawValues.First(), "dd-MM-yy", null);
                 int[] numbers = rawValues.Skip(1).Select(rawValue => int.Parse(rawValue)).ToArray();
 
                 entries.Add(new HistoricalDataEntry(timestamp, numbers));
             }
 
-            return new HistoricalData(HistoricalDataType.Joker, entries.ToArray());
+            return new HistoricalData(HistoricalDataType.Joker, entries.OrderBy(entry => entry.Timestamp).ToArray());
         }
     }
 }

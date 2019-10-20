@@ -33,11 +33,9 @@ namespace Lottery.Engine
 
         private List<ProcessingResultEntry> ConvertToResult(Dictionary<int, int> lastOccurenceIndexes, bool isJoker)
         {
-            int minIndex = lastOccurenceIndexes.Values.Min();
-
             return lastOccurenceIndexes
                 .OrderBy(pair => pair.Key)
-                .Select(pair => new ProcessingResultEntry(pair.Key, isJoker ? NumberType.Joker : NumberType.Regular, pair.Value - minIndex))
+                .Select(pair => new ProcessingResultEntry(pair.Key, isJoker ? NumberType.Joker : NumberType.Regular, lastOccurenceIndexes.Count - pair.Value))
                 .ToList();
         }
     }
