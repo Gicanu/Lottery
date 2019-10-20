@@ -5,33 +5,42 @@ using System.Linq;
 
 namespace Lottery.Engine
 {
-    class JokerFrequencyScoreProcessor : IScoreProcessor
+    class JokerLastOccurenceScoreProcessor : IScoreProcessor
     {
         public ProcessingResultGroup Process(HistoricalDataEntry[] dataEntries)
         {
-            Dictionary<int, int> jokerFrequencies = CalculateFrequencies(dataEntries, 0, 1, 20);
-            Dictionary<int, int> numberFrequencies = CalculateFrequencies(dataEntries, 1, 5, 40);
+            Dictionary<int, int> jokerLastOccurenceIndexes = CalculateLastOccurenceIndexes(dataEntries, 0, 1, 20);
+            Dictionary<int, int> numberLastOccurenceIndexes = CalculateLastOccurenceIndexes(dataEntries, 1, 5, 40);
 
-            List<ProcessingResultEntry> jokerResultEntries = Enumerable.Range(1, 20).Select(number => new ProcessingResultEntry(number, NumberType.Joker, jokerFrequencies[number])).ToList();
-            List<ProcessingResultEntry> numberResultEntries = Enumerable.Range(1, 40).Select(number => new ProcessingResultEntry(number, numberFrequencies[number])).ToList();
+            List<ProcessingResultEntry> jokerResultEntries = ConvertToResult(jokerLastOccurenceIndexes, isJoker: true);
+            List<ProcessingResultEntry> numberResultEntries = ConvertToResult(numberLastOccurenceIndexes, isJoker: false);
 
-            return new ProcessingResultGroup("Frequency", jokerResultEntries.Concat(numberResultEntries).ToArray());
+            return new ProcessingResultGroup("LastOccurence", jokerResultEntries.Concat(numberResultEntries).ToArray());
         }
 
-        private Dictionary<int, int> CalculateFrequencies(HistoricalDataEntry[] dataEntries, int from, int count, int endRange)
+        private Dictionary<int, int> CalculateLastOccurenceIndexes(HistoricalDataEntry[] dataEntries, int from, int count, int endRange)
         {
-            Dictionary<int, int> frequencies = dataEntries
-                .SelectMany(dataEntry => dataEntry.Numbers.Skip(from).Take(count))
-                .ToLookup(number => number)
-                .ToDictionary(group => group.Key, group => group.Count());
-
-            for (int number = 1; number <= endRange; number++)
+            Dictionary<int, int> lastOccurenceIndexes = Enumerable.Range(1, endRange).ToDictionary(number => number, _ => -1);
+                
+            for (int index = 0; index < dataEntries.Length; index++)
             {
-                if (!frequencies.ContainsKey(number))
-                    frequencies.Add(number, 0);
+                foreach (int number in dataEntries[index].Numbers.Skip(from).Take(count))
+                {
+                    lastOccurenceIndexes[number] = index;
+                }
             }
 
-            return frequencies;
+            return lastOccurenceIndexes;
+        }
+
+        private List<ProcessingResultEntry> ConvertToResult(Dictionary<int, int> lastOccurenceIndexes, bool isJoker)
+        {
+            int minIndex = lastOccurenceIndexes.Values.Min();
+
+            return lastOccurenceIndexes
+                .OrderBy(pair => pair.Key)
+                .Select(pair => new ProcessingResultEntry(pair.Key, isJoker ? NumberType.Joker : NumberType.Regular, pair.Value - minIndex))
+                .ToList();
         }
     }
 }
