@@ -2,7 +2,12 @@
 {
     public class ProcessingResultEntry
     {
-        public ProcessingResultEntry(int number, double score, NumberType type = NumberType.Regular)
+        public ProcessingResultEntry(int number, double score)
+            : this(number, NumberType.Regular, score)
+        {
+        }
+
+        public ProcessingResultEntry(int number, NumberType type, double score)
         {
             Number = number;
             Score = score;
@@ -11,9 +16,9 @@
 
         public int Number { get; }
 
-        public double Score { get; }
-
         public NumberType Type { get; }
+
+        public double Score { get; }
 
         public override string ToString()
         {

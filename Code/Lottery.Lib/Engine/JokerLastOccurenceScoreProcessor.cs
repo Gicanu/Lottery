@@ -12,8 +12,8 @@ namespace Lottery.Engine
             Dictionary<int, int> jokerFrequencies = CalculateFrequencies(dataEntries, 0, 1, 20);
             Dictionary<int, int> numberFrequencies = CalculateFrequencies(dataEntries, 1, 5, 40);
 
-            List<ProcessingResultEntry> jokerResultEntries = Enumerable.Range(1, 20).Select(number => new ProcessingResultEntry(number, jokerFrequencies[number], NumberType.Joker)).ToList();
-            List<ProcessingResultEntry> numberResultEntries = Enumerable.Range(1, 40).Select(number => new ProcessingResultEntry(number, numberFrequencies[number], NumberType.Regular)).ToList();
+            List<ProcessingResultEntry> jokerResultEntries = Enumerable.Range(1, 20).Select(number => new ProcessingResultEntry(number, NumberType.Joker, jokerFrequencies[number])).ToList();
+            List<ProcessingResultEntry> numberResultEntries = Enumerable.Range(1, 40).Select(number => new ProcessingResultEntry(number, numberFrequencies[number])).ToList();
 
             return new ProcessingResultGroup("Frequency", jokerResultEntries.Concat(numberResultEntries).ToArray());
         }

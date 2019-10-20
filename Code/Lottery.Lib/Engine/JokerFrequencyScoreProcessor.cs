@@ -39,7 +39,7 @@ namespace Lottery.Engine
 
             return lastOccurenceIndexes
                 .OrderBy(pair => pair.Key)
-                .Select(pair => new ProcessingResultEntry(pair.Key, pair.Value - minIndex, isJoker ? NumberType.Joker : NumberType.Regular))
+                .Select(pair => new ProcessingResultEntry(pair.Key, isJoker ? NumberType.Joker : NumberType.Regular, pair.Value - minIndex))
                 .ToList();
         }
     }
