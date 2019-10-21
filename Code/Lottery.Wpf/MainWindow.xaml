@@ -1,0 +1,19 @@
+﻿<Window x:Class="Lottery.Wpf.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Lottery.Wpf"
+        mc:Ignorable="d"
+        Title="Lottery" Height="450" Width="800">
+    <DockPanel LastChildFill="True">
+        <DockPanel DockPanel.Dock="Top" LastChildFill="True">
+            <Button DockPanel.Dock="Right" Content="..." Padding="2" Click="BrowseButtonClick" />
+            <TextBox></TextBox>            
+        </DockPanel>
+        
+        <Grid>
+            
+        </Grid>
+    </DockPanel>
+</Window>
