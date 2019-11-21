@@ -6,4 +6,8 @@
     <UseWPF>true</UseWPF>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Lottery.Lib\Lottery.Lib.csproj" />
+  </ItemGroup>
+
 </Project>
