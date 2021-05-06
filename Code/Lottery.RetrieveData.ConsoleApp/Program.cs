@@ -69,7 +69,7 @@ namespace Gsu.Lottery.RetrieveData.ConsoleApp
             {
                 foreach ((DateTime date, int[] numbers) in valuesList)
                 {
-                    string line = string.Join(", ", new[] { $"{date:yyyy-MM-dd}" }.Concat(numbers.Select(number => $"{number:N2}")));
+                    string line = string.Join(", ", new[] { $"{date:yyyy-MM-dd}" }.Concat(numbers.Select(number => $"{number:D2}")));
 
                     writer.WriteLine(line);
                 }

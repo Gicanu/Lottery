@@ -1,11 +1,8 @@
-﻿using Lottery.Engine.Contract;
-using Lottery.Format.Contract;
-using Lottery.Storage.Contract;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
-using Unity;
 
 namespace Lottery.ConsoleApp
 {
@@ -13,119 +10,66 @@ namespace Lottery.ConsoleApp
     {
         static void Main(string[] args)
         {
-            ProgramArguments arguments = ParseArguments(args);
-
-            if (arguments == null)
-            {
-                PrintUsageMessage();
+            if (args.Length != 1)
                 return;
-            }
 
-            HistoricalDataType historicalDataType = GetHistoricalDataType(arguments);
+            Console.WriteLine("Reading data ...");
 
-            if (historicalDataType == HistoricalDataType.None)
+            var valuesList = new List<(DateTime, int[])>();
+
+            using (var reader = new StreamReader(File.OpenRead(args[0])))
             {
-                PrintUsageMessage();
-                return;
-            }
+                string line = reader.ReadLine();
 
-            IUnityContainer unityContainer = new UnityContainer().RegisterAllTypes();                
-
-            IHistoricalDataReader reader = unityContainer.Resolve<IHistoricalDataReader>(historicalDataType.ToString());
-            HistoricalData historicalData = reader.ReadAll(arguments.InputFilePath);
-            
-            IDataProcessor dataProcessor = unityContainer.Resolve<IDataProcessor>(HistoricalDataType.Joker.ToString());
-            ProcessingResult result = dataProcessor.Process(historicalData);
-
-            IResultFormatter resultFormatter = unityContainer.Resolve<IResultFormatter>("Tabular");
-            IEnumerable<string[]> rows = resultFormatter.Format(result);
-
-            PrintRows(rows);
-            SaveRowsToCsv(rows, "output.txt");
-
-            Console.WriteLine("Result file written.");
-        }
-
-        private static HistoricalDataType GetHistoricalDataType(ProgramArguments arguments)
-        {
-            switch (arguments.InputType)
-            {
-                case "Joker":
-                    return HistoricalDataType.Joker;
-
-                default:
-                    return HistoricalDataType.None;
-            }
-        }
-
-        private static ProgramArguments ParseArguments(string[] args)
-        {
-            if (args.Length != 3)
-                return null;
-
-            string inputTypeArgument = args.FirstOrDefault(argument => argument.StartsWith("-InputType", StringComparison.InvariantCultureIgnoreCase));
-            string inputTypeArgumentValue = null;
-            string inputFilePathArgumentValue = null;
-
-            bool inputTypeArgumentValueExpected = false;
-
-            foreach (string arg in args)
-            {
-                if (arg.StartsWith("-"))
+                while (line != null)
                 {
-                    if (arg.Equals("-InputType", StringComparison.InvariantCultureIgnoreCase))
-                    {
-                        inputTypeArgumentValueExpected = true;
-                        continue;
-                    }
+                    string[] rawValues = line.Split(", ");
+
+                    DateTime date = DateTime.ParseExact(rawValues[0], "yyyy-MM-dd", CultureInfo.InvariantCulture);
+                    int[] numbers = rawValues.Skip(1).Select(rawValue => int.Parse(rawValue)).ToArray();
+
+                    valuesList.Add((date, numbers));
+
+                    line = reader.ReadLine();
                 }
+            }
+
+            Console.WriteLine("Data read.");
+
+            Console.WriteLine("Processing data ...");
+
+            var jokerOccurences = new Dictionary<int, int>();
+            var numbersOccurences = new Dictionary<int, int>();
+
+            foreach ((DateTime date, int[] numbers) in valuesList)
+            {
+                if (!jokerOccurences.ContainsKey(numbers[5]))
+                    jokerOccurences.Add(numbers[5], 1);
                 else
-                {
-                    if (inputTypeArgumentValueExpected)
-                    {
-                        if (string.IsNullOrEmpty(inputTypeArgumentValue))
-                        {
-                            inputTypeArgumentValue = arg;
-                            inputTypeArgumentValueExpected = false;
-                            continue;
-                        }
-                    }
-                    else if (string.IsNullOrEmpty(inputFilePathArgumentValue))
-                    {
-                        inputFilePathArgumentValue = arg;
-                        continue;
-                    }
-                }
+                    jokerOccurences[numbers[5]]++;
 
-                return null;
+                foreach (int number in numbers.Take(5))
+                {
+                    if (!numbersOccurences.ContainsKey(number))
+                        numbersOccurences.Add(number, 1);
+                    else
+                        numbersOccurences[number]++;
+                }
             }
 
-            return new ProgramArguments
+            Console.WriteLine("Data processed.");
+
+            string[] jokerOccureancesTexts = jokerOccurences.OrderByDescending(pair => pair.Value).Select(pair => $"{pair.Key:D2} - {pair.Value:D3}").ToArray();
+            string[] numberOccureancesTexts = numbersOccurences.OrderByDescending(pair => pair.Value).Select(pair => $"{pair.Key:D2} - {pair.Value:D3}").ToArray();
+
+            Console.WriteLine("Joker    \tNumbers");
+
+            for (int i = 0; i < numberOccureancesTexts.Length; i++)
             {
-                InputType = inputTypeArgumentValue,
-                InputFilePath = inputFilePathArgumentValue,
-            };
-        }
-
-        private static void PrintUsageMessage()
-        {
-            Console.WriteLine("Usage: Lottery -InputType 6of49|Joker|5of40 InputFilePath ");
-        }
-
-        private static void PrintRows(IEnumerable<string[]> rowItems)
-        {
-            int maxItemLength = rowItems.SelectMany(item => item).Select(item => item.Length).Max();
-
-            foreach (string[] items in rowItems)
-                Console.WriteLine(items.Aggregate(string.Empty, (result, item) => string.Concat(result, item, new string(' ', maxItemLength + 1 - item.Length))));
-        }
-
-        private static void SaveRowsToCsv(IEnumerable<string[]> rowItems, string outputFilePath)
-        {
-            using (StreamWriter writer = new StreamWriter(File.OpenWrite("output.txt")))
-            {
-                foreach (string[] items in rowItems)
-                    writer.WriteLine(items.Aggregate(string.Empty, (result, item) => string.Concat(result, item, ",")));
+                if (i < jokerOccureancesTexts.Length)
+                    Console.WriteLine(string.Concat(jokerOccureancesTexts[i], "\t", numberOccureancesTexts[i]));
+                else
+                    Console.WriteLine(string.Concat(new string(' ', 8), "\t", numberOccureancesTexts[i]));
             }
         }
     }
