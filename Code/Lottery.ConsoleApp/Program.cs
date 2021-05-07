@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 
 namespace Lottery.ConsoleApp
 {
@@ -15,7 +16,7 @@ namespace Lottery.ConsoleApp
 
             Console.WriteLine("Reading data ...");
 
-            var valuesList = new List<(DateTime, int[])>();
+            var extractions = new List<Extraction>();
 
             using (var reader = new StreamReader(File.OpenRead(args[0])))
             {
@@ -28,7 +29,7 @@ namespace Lottery.ConsoleApp
                     DateTime date = DateTime.ParseExact(rawValues[0], "yyyy-MM-dd", CultureInfo.InvariantCulture);
                     int[] numbers = rawValues.Skip(1).Select(rawValue => int.Parse(rawValue)).ToArray();
 
-                    valuesList.Add((date, numbers));
+                    extractions.Add(new Extraction { Date = date, Numbers = numbers });
 
                     line = reader.ReadLine();
                 }
@@ -38,39 +39,101 @@ namespace Lottery.ConsoleApp
 
             Console.WriteLine("Processing data ...");
 
-            var jokerOccurences = new Dictionary<int, int>();
-            var numbersOccurences = new Dictionary<int, int>();
+            var jokerStatistics = GenerateDefaultDictionary<Statistics>(20);
+            var numberStatistics = GenerateDefaultDictionary<Statistics>(45);
 
-            foreach ((DateTime date, int[] numbers) in valuesList)
+            DateTime today = DateTime.Now.Date;
+            
+            Extraction[] orderedExtractions = extractions.OrderBy(extraction => extraction.Date).ToArray();
+
+            for (int i = 0; i < orderedExtractions.Length; i++)
             {
-                if (!jokerOccurences.ContainsKey(numbers[5]))
-                    jokerOccurences.Add(numbers[5], 1);
-                else
-                    jokerOccurences[numbers[5]]++;
+                Extraction extraction = orderedExtractions[i];
 
-                foreach (int number in numbers.Take(5))
+                for (int j = 0; j < extraction.Numbers.Length; j++)
                 {
-                    if (!numbersOccurences.ContainsKey(number))
-                        numbersOccurences.Add(number, 1);
+                    Statistics statistics;
+
+                    if (j < 5)
+                        statistics = numberStatistics[extraction.Numbers[j]];
                     else
-                        numbersOccurences[number]++;
+                        statistics = jokerStatistics[extraction.Numbers[j]];
+
+                    statistics.Count++;
+                    statistics.LastOccurance = orderedExtractions.Length - i - 1;
                 }
             }
 
+            FillPercentages(jokerStatistics, orderedExtractions.Length, extractions.Count);
+            FillPercentages(numberStatistics, orderedExtractions.Length, extractions.Count * 5);
+
+            var jokerScore1 = jokerStatistics.Select(pair => (pair.Key, pair.Value.Count)).ToDictionary(tuple => tuple.Item1, tuple => tuple.Item2);
+            var jokerScore2 = jokerStatistics.Select(pair => (pair.Key, pair.Value.LastOccurance)).ToDictionary(tuple => tuple.Item1, tuple => tuple.Item2);
+            
+            var numberScore1 = numberStatistics.Select(pair => (pair.Key, pair.Value.Count)).ToDictionary(tuple => tuple.Item1, tuple => tuple.Item2);
+            var numberScore2 = numberStatistics.Select(pair => (pair.Key, pair.Value.LastOccurance)).ToDictionary(tuple => tuple.Item1, tuple => tuple.Item2);
+
             Console.WriteLine("Data processed.");
 
-            string[] jokerOccureancesTexts = jokerOccurences.OrderByDescending(pair => pair.Value).Select(pair => $"{pair.Key:D2} - {pair.Value:D3}").ToArray();
-            string[] numberOccureancesTexts = numbersOccurences.OrderByDescending(pair => pair.Value).Select(pair => $"{pair.Key:D2} - {pair.Value:D3}").ToArray();
+            Console.WriteLine($"Total: {extractions.Count}");
+            Console.WriteLine();
 
-            Console.WriteLine("Joker    \tNumbers");
+            string[] jokerTexts1 = jokerScore1.OrderByDescending(pair => pair.Value).Select(pair => $"{pair.Key:D2} - {pair.Value:F0}").ToArray();
+            string[] jokerTexts2 = jokerScore2.OrderByDescending(pair => pair.Value).Select(pair => $"{pair.Key:D2} - {pair.Value:F0}").ToArray();
 
-            for (int i = 0; i < numberOccureancesTexts.Length; i++)
+            string[] numberTexts1 = numberScore1.OrderByDescending(pair => pair.Value).Select(pair => $"{pair.Key:D2} - {pair.Value:F0}").ToArray();
+            string[] numberTexts2 = numberScore2.OrderByDescending(pair => pair.Value).Select(pair => $"{pair.Key:D2} - {pair.Value:F0}").ToArray();
+
+            DisplayResults(jokerTexts1, jokerTexts2, numberTexts1, numberTexts2);
+        }
+
+        private static void FillPercentages(Dictionary<int, Statistics> jokerStatistics, double totalDays, double totalCount)
+        {
+            foreach (var pair in jokerStatistics)
             {
-                if (i < jokerOccureancesTexts.Length)
-                    Console.WriteLine(string.Concat(jokerOccureancesTexts[i], "\t", numberOccureancesTexts[i]));
-                else
-                    Console.WriteLine(string.Concat(new string(' ', 8), "\t", numberOccureancesTexts[i]));
+                pair.Value.CountPerTotal = 100.0 * pair.Value.Count / totalCount;
+                pair.Value.LastOccurancePerTotal = 100.0 * pair.Value.LastOccurance / totalDays;
             }
+        }
+
+        private static Dictionary<int, T> GenerateDefaultDictionary<T>(int maxKeyValue) where T : new()
+        {
+            var dictionary = new Dictionary<int, T>(maxKeyValue);
+
+            for (int keyValue = 1; keyValue <= maxKeyValue; keyValue++)
+                dictionary.Add(keyValue, new T());
+
+            return dictionary;
+        }
+
+        private static void DisplayResults(params string[][] textLists)
+        {
+            int maxCount = textLists.Max(textList => textList.Length);
+            int cellSize = 20;
+
+            var result = new StringBuilder();
+
+            for (int index = 0; index < maxCount; index++)
+            {
+                foreach (string[] textList in textLists)
+                {
+                    if (index >= textList.Length)
+                    {
+                        result.Append(new string(' ', cellSize));
+                    }
+                    else
+                    {
+                        result.Append(textList[index]);
+
+                        if (textList[index].Length < cellSize)
+                            result.Append(new string(' ', cellSize - textList[index].Length));
+                    }
+                }
+
+                result.AppendLine();
+            }
+
+            Console.WriteLine(result);
         }
     }
 }
